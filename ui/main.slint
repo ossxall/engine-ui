@@ -1,0 +1,421 @@
+component MetricCard inherits Rectangle {
+    in property <string> label;
+    in property <string> value;
+    in property <string> unit;
+    in property <color> accent;
+
+    horizontal-stretch: 1;
+    background: #111b28;
+    border-radius: 14px;
+    border-width: 1px;
+    border-color: #202e3d;
+
+    VerticalLayout {
+        padding: 18px;
+        spacing: 8px;
+
+        HorizontalLayout {
+            spacing: 8px;
+            Rectangle {
+                width: 7px;
+                height: 7px;
+                border-radius: 4px;
+                background: root.accent;
+                y: 5px;
+            }
+            Text {
+                text: root.label;
+                color: #91a3b8;
+                font-size: 12px;
+                letter-spacing: 1px;
+            }
+        }
+
+        HorizontalLayout {
+            alignment: start;
+            spacing: 8px;
+            Text {
+                text: root.value;
+                color: #f1f6fb;
+                font-size: 30px;
+                font-weight: 700;
+            }
+            Text {
+                text: root.unit;
+                color: root.accent;
+                font-size: 13px;
+                vertical-alignment: bottom;
+            }
+        }
+
+        Text {
+            text: "LECTURA EN TIEMPO REAL";
+            color: #52657a;
+            font-size: 9px;
+            letter-spacing: 1px;
+        }
+    }
+}
+
+component TelemetryBar inherits Rectangle {
+    in property <length> bar-height;
+    width: 12px;
+    y: 164px - root.bar-height;
+    height: root.bar-height;
+    border-radius: 3px;
+    background: #26c9b8;
+}
+
+component StatusMeter inherits Rectangle {
+    in property <string> label;
+    in property <string> value;
+    in property <float> progress;
+    in property <color> accent;
+
+    height: 48px;
+    background: transparent;
+
+    VerticalLayout {
+        spacing: 7px;
+        HorizontalLayout {
+            Text {
+                text: root.label;
+                color: #9aaabd;
+                font-size: 12px;
+            }
+            Text {
+                text: root.value;
+                color: #e5edf5;
+                font-size: 12px;
+                horizontal-alignment: right;
+            }
+        }
+        Rectangle {
+            height: 5px;
+            background: #202c3a;
+            border-radius: 3px;
+            Rectangle {
+                width: parent.width * root.progress;
+                height: parent.height;
+                background: root.accent;
+                border-radius: 3px;
+            }
+        }
+    }
+}
+
+export component MainWindow inherits Window {
+    title: "AURORA · Telemetría de motor";
+    width: 1440px;
+    height: 960px;
+    background: #0a1019;
+
+    in-out property <bool> simulation-running: true;
+
+    VerticalLayout {
+        padding: 28px;
+        spacing: 18px;
+
+        // Encabezado de misión
+        HorizontalLayout {
+            height: 62px;
+            spacing: 16px;
+
+            Rectangle {
+                width: 42px;
+                height: 42px;
+                border-radius: 12px;
+                background: #123b43;
+                Text {
+                    text: "A";
+                    color: #48e0cf;
+                    font-size: 22px;
+                    font-weight: 700;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px;
+                Text {
+                    text: "AURORA";
+                    color: #eff5fb;
+                    font-size: 18px;
+                    font-weight: 700;
+                    letter-spacing: 2px;
+                }
+                Text {
+                    text: "CENTRO DE CONTROL DE PROPULSIÓN";
+                    color: #73869b;
+                    font-size: 9px;
+                    letter-spacing: 1px;
+                }
+            }
+
+            Rectangle { horizontal-stretch: 1; background: transparent; }
+
+            Rectangle {
+                width: 162px;
+                height: 34px;
+                border-radius: 17px;
+                background: root.simulation-running ? #12362f : #352819;
+                HorizontalLayout {
+                    alignment: center;
+                    spacing: 8px;
+                    Rectangle {
+                        width: 7px;
+                        height: 7px;
+                        border-radius: 4px;
+                        background: root.simulation-running ? #43d9a6 : #e7a64a;
+                        y: 13px;
+                    }
+                    Text {
+                        text: root.simulation-running ? "SIMULACIÓN ACTIVA" : "SIMULACIÓN PAUSADA";
+                        color: root.simulation-running ? #77e4bb : #f0bd6e;
+                        font-size: 10px;
+                        font-weight: 700;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+
+            Rectangle {
+                width: 1px;
+                height: 34px;
+                background: #263342;
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px;
+                Text {
+                    text: "T+ 00:02:14";
+                    color: #f2f6fb;
+                    font-size: 17px;
+                    font-weight: 700;
+                    horizontal-alignment: right;
+                }
+                Text {
+                    text: "MISIÓN ORIÓN · VUELO 01";
+                    color: #73869b;
+                    font-size: 9px;
+                    letter-spacing: 1px;
+                    horizontal-alignment: right;
+                }
+            }
+        }
+
+        // Indicadores principales del motor
+        HorizontalLayout {
+            height: 126px;
+            spacing: 14px;
+            MetricCard { label: "PRESIÓN DE CÁMARA"; value: "4.82"; unit: "MPa"; accent: #43d9c7; }
+            MetricCard { label: "EMPUJE"; value: "18.6"; unit: "kN"; accent: #67a8ff; }
+            MetricCard { label: "TEMPERATURA"; value: "2,140"; unit: "°C"; accent: #ff9a58; }
+            MetricCard { label: "TURBOBOMBA"; value: "31,400"; unit: "rpm"; accent: #be9aff; }
+        }
+
+        // Tendencia de presión y estado de los subsistemas
+        HorizontalLayout {
+            height: 322px;
+            spacing: 18px;
+
+            Rectangle {
+                horizontal-stretch: 2;
+                background: #111b28;
+                border-radius: 14px;
+                border-width: 1px;
+                border-color: #202e3d;
+                VerticalLayout {
+                    padding: 20px;
+                    spacing: 14px;
+                    HorizontalLayout {
+                        height: 38px;
+                        VerticalLayout {
+                            spacing: 3px;
+                            Text { text: "PERFIL DE PRESIÓN"; color: #eaf1f8; font-size: 13px; font-weight: 700; letter-spacing: 1px; }
+                            Text { text: "Cámara de combustión · últimos 60 segundos"; color: #71849a; font-size: 10px; }
+                        }
+                        Rectangle { horizontal-stretch: 1; background: transparent; }
+                        Text { text: "MPa"; color: #39d3c1; font-size: 11px; vertical-alignment: center; }
+                    }
+
+                    Rectangle {
+                        height: 220px;
+                        background: #0c1420;
+                        border-radius: 10px;
+                        clip: true;
+
+                        // Rejilla y escala del gráfico
+                        Rectangle { x: 28px; y: 36px; width: parent.width - 42px; height: 1px; background: #1c2a38; }
+                        Rectangle { x: 28px; y: 76px; width: parent.width - 42px; height: 1px; background: #1c2a38; }
+                        Rectangle { x: 28px; y: 116px; width: parent.width - 42px; height: 1px; background: #1c2a38; }
+                        Rectangle { x: 28px; y: 156px; width: parent.width - 42px; height: 1px; background: #1c2a38; }
+                        Text { x: 4px; y: 28px; text: "6.0"; color: #52657a; font-size: 9px; }
+                        Text { x: 4px; y: 68px; text: "4.0"; color: #52657a; font-size: 9px; }
+                        Text { x: 4px; y: 108px; text: "2.0"; color: #52657a; font-size: 9px; }
+                        Text { x: 4px; y: 148px; text: "0.0"; color: #52657a; font-size: 9px; }
+
+                        // Serie de muestra; cada barra representa una lectura de presión.
+                        TelemetryBar { x: 42px; bar-height: 54px; }
+                        TelemetryBar { x: 72px; bar-height: 63px; }
+                        TelemetryBar { x: 102px; bar-height: 70px; }
+                        TelemetryBar { x: 132px; bar-height: 82px; }
+                        TelemetryBar { x: 162px; bar-height: 94px; }
+                        TelemetryBar { x: 192px; bar-height: 103px; }
+                        TelemetryBar { x: 222px; bar-height: 110px; }
+                        TelemetryBar { x: 252px; bar-height: 116px; }
+                        TelemetryBar { x: 282px; bar-height: 120px; }
+                        TelemetryBar { x: 312px; bar-height: 117px; }
+                        TelemetryBar { x: 342px; bar-height: 122px; }
+                        TelemetryBar { x: 372px; bar-height: 121px; }
+                        TelemetryBar { x: 402px; bar-height: 124px; }
+                        TelemetryBar { x: 432px; bar-height: 119px; }
+                        TelemetryBar { x: 462px; bar-height: 123px; }
+                        TelemetryBar { x: 492px; bar-height: 126px; }
+                        TelemetryBar { x: 522px; bar-height: 121px; }
+                        TelemetryBar { x: 552px; bar-height: 125px; }
+                        TelemetryBar { x: 582px; bar-height: 123px; }
+                        TelemetryBar { x: 612px; bar-height: 128px; }
+                        TelemetryBar { x: 642px; bar-height: 125px; }
+                        TelemetryBar { x: 672px; bar-height: 129px; }
+                        TelemetryBar { x: 702px; bar-height: 127px; }
+                        TelemetryBar { x: 732px; bar-height: 132px; }
+
+                        Text { x: 28px; y: 184px; text: "T−60s"; color: #607389; font-size: 9px; }
+                        Text { x: parent.width / 2 - 14px; y: 184px; text: "T−30s"; color: #607389; font-size: 9px; }
+                        Text { x: parent.width - 58px; y: 184px; text: "AHORA"; color: #39d3c1; font-size: 9px; }
+                    }
+
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Rectangle { width: 7px; height: 7px; border-radius: 4px; background: #39d3c1; y: 4px; }
+                        Text { text: "LECTURA ACTUAL: 4.82 MPa"; color: #93a6ba; font-size: 10px; }
+                        Rectangle { horizontal-stretch: 1; background: transparent; }
+                        Text { text: "MUESTREO 20 Hz"; color: #566b80; font-size: 9px; }
+                    }
+                }
+            }
+
+            Rectangle {
+                horizontal-stretch: 1;
+                background: #111b28;
+                border-radius: 14px;
+                border-width: 1px;
+                border-color: #202e3d;
+                VerticalLayout {
+                    padding: 20px;
+                    spacing: 14px;
+                    Text { text: "ESTADO DE SISTEMAS"; color: #eaf1f8; font-size: 13px; font-weight: 700; letter-spacing: 1px; }
+
+                    StatusMeter { label: "Oxígeno líquido"; value: "82%"; progress: 0.82; accent: #49c6e5; }
+                    StatusMeter { label: "Combustible"; value: "76%"; progress: 0.76; accent: #43d9c7; }
+                    StatusMeter { label: "Batería"; value: "24.8 V"; progress: 0.91; accent: #a78bfa; }
+                    StatusMeter { label: "Presión de tanque"; value: "3.10 MPa"; progress: 0.68; accent: #67a8ff; }
+
+                    Rectangle { height: 1px; background: #243241; }
+                    HorizontalLayout {
+                        Text { text: "GPS"; color: #778ba0; font-size: 10px; }
+                        Rectangle { horizontal-stretch: 1; background: transparent; }
+                        Text { text: "34.0522° N   118.2437° O"; color: #b9c8d7; font-size: 10px; }
+                    }
+                    HorizontalLayout {
+                        Text { text: "ENLACE"; color: #778ba0; font-size: 10px; }
+                        Rectangle { horizontal-stretch: 1; background: transparent; }
+                        Text { text: "ESTABLE · 12 ms"; color: #58d9a8; font-size: 10px; }
+                    }
+                }
+            }
+        }
+
+        // Registro de eventos y control de simulación
+        HorizontalLayout {
+            height: 230px;
+            spacing: 18px;
+
+            Rectangle {
+                horizontal-stretch: 2;
+                background: #111b28;
+                border-radius: 14px;
+                border-width: 1px;
+                border-color: #202e3d;
+                VerticalLayout {
+                    padding: 20px;
+                    spacing: 12px;
+                    HorizontalLayout {
+                        height: 26px;
+                        Text { text: "REGISTRO DE EVENTOS"; color: #eaf1f8; font-size: 13px; font-weight: 700; letter-spacing: 1px; }
+                        Rectangle { horizontal-stretch: 1; background: transparent; }
+                        Text { text: "VER TODO  ↗"; color: #43d9c7; font-size: 9px; vertical-alignment: center; }
+                    }
+                    HorizontalLayout {
+                        height: 30px;
+                        spacing: 12px;
+                        Text { text: "T+ 00:02:14"; color: #73879d; font-size: 10px; }
+                        Rectangle { width: 6px; height: 6px; border-radius: 3px; background: #43d9a6; y: 5px; }
+                        Text { text: "Presión de cámara dentro del rango nominal"; color: #c4d0dc; font-size: 11px; }
+                    }
+                    Rectangle { height: 1px; background: #202c39; }
+                    HorizontalLayout {
+                        height: 30px;
+                        spacing: 12px;
+                        Text { text: "T+ 00:01:58"; color: #73879d; font-size: 10px; }
+                        Rectangle { width: 6px; height: 6px; border-radius: 3px; background: #67a8ff; y: 5px; }
+                        Text { text: "Enlace de telemetría establecido · 12 ms"; color: #c4d0dc; font-size: 11px; }
+                    }
+                    Rectangle { height: 1px; background: #202c39; }
+                    HorizontalLayout {
+                        height: 30px;
+                        spacing: 12px;
+                        Text { text: "T+ 00:01:32"; color: #73879d; font-size: 10px; }
+                        Rectangle { width: 6px; height: 6px; border-radius: 3px; background: #ffb454; y: 5px; }
+                        Text { text: "Secuencia de encendido completada"; color: #c4d0dc; font-size: 11px; }
+                    }
+                }
+            }
+
+            Rectangle {
+                horizontal-stretch: 1;
+                background: #111b28;
+                border-radius: 14px;
+                border-width: 1px;
+                border-color: #202e3d;
+                VerticalLayout {
+                    padding: 20px;
+                    spacing: 13px;
+                    Text { text: "CONTROL DE PRUEBA"; color: #eaf1f8; font-size: 13px; font-weight: 700; letter-spacing: 1px; }
+                    Text {
+                        text: "Panel conectado a datos simulados. No controla hardware de vuelo.";
+                        color: #8799ad;
+                        font-size: 11px;
+                        wrap: word-wrap;
+                    }
+                    Rectangle { vertical-stretch: 1; background: transparent; }
+                    Rectangle {
+                        height: 42px;
+                        border-radius: 9px;
+                        background: root.simulation-running ? #163d3a : #18364b;
+                        border-width: 1px;
+                        border-color: root.simulation-running ? #24685e : #285879;
+                        Text {
+                            text: root.simulation-running ? "PAUSAR SIMULACIÓN" : "REANUDAR SIMULACIÓN";
+                            color: root.simulation-running ? #69e2c7 : #79c4ff;
+                            font-size: 10px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                        TouchArea {
+                            width: parent.width;
+                            height: parent.height;
+                            clicked => { root.simulation-running = !root.simulation-running; }
+                        }
+                    }
+                    Text { text: "SISTEMA DE PRUEBA · DATOS NO OPERACIONALES"; color: #586c81; font-size: 8px; letter-spacing: 0.5px; }
+                }
+            }
+        }
+    }
+}
